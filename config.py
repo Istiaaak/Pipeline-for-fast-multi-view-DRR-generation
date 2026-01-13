@@ -6,14 +6,14 @@ from typing import Tuple
 class Config:  
 
     # CT parameters
-    target_iso_mm: float = 1.0
+    target_iso_mm: float = 1.875
     hu_window: Tuple[float, float] = (-500, 1300)
     orientation: str = "RAS"
 
     # Tigre geometry
     sid: float = 1500.0
     sod: float = 1000.0
-    n_angles: int = 5
+    n_angles: int = 3
     end_angle: float = 90.0
 
     # Detector parameters

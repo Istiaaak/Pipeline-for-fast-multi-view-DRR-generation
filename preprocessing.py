@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from monai.transforms import (
-    Compose, LoadImage, EnsureChannelFirst, Orientation, Spacing, Lambda, BorderPad
+    Compose, LoadImage, EnsureChannelFirst, Orientation, Spacing, Lambda, BorderPad, ResizeWithPadOrCrop, Flip
 )
 
 
@@ -9,15 +9,21 @@ class Preprocessor:
     def __init__(self, config):
         self.config = config
         self.pipeline = Compose([LoadImage(image_only=True),
-                                 EnsureChannelFirst(),
-                                 Orientation(axcodes=self.config.orientation),
-                                 BorderPad(spatial_border=10, mode="constant", constant_values=self.config.hu_window[0]),
-                                 Spacing(
-                                     pixdim=(self.config.target_iso_mm, self.config.target_iso_mm, self.config.target_iso_mm),
-                                     mode="bilinear",
-                                     padding_mode="border"
+                                EnsureChannelFirst(),
+                                Orientation(axcodes=self.config.orientation),
+                                Flip(spatial_axis=[0, 1, 2]),
+                                Spacing(
+                                    pixdim=(self.config.target_iso_mm, self.config.target_iso_mm, self.config.target_iso_mm),
+                                    mode="bilinear",
+                                    padding_mode="border"
                                  ),
-                                 Lambda(func=lambda x: torch.clamp(x, min=self.config.hu_window[0], max=self.config.hu_window[1]))
+                                 ResizeWithPadOrCrop(
+                                    spatial_size=(128,128,128),
+                                    mode="constant",
+                                    constant_values=self.config.hu_window[0]
+                                 ),
+                                
+                                Lambda(func=lambda x: torch.clamp(x, min=self.config.hu_window[0], max=self.config.hu_window[1]))
 
         ])
 
